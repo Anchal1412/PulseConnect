@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { signup } from '../controllers/authController';
 import '../Signup.css';
 
@@ -30,13 +30,18 @@ const Signup: React.FC = () => {
   return (
     <div className="signup-page">
       <div className="signup-container">
-        <h2>Create Account</h2>
-        <form onSubmit={handleSubmit}>
+        <h2 className="signup-title">Create Account</h2>
+
+        <form className="signup-form" onSubmit={handleSubmit}>
           <input name="name" placeholder="Name" onChange={handleChange} required />
-          <input name="email" placeholder="Email" onChange={handleChange} required />
+          <input name="email" type="email" placeholder="Email" onChange={handleChange} required />
           <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
           <button type="submit">Signup</button>
         </form>
+
+        <p className="signup-note">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
       </div>
     </div>
   );
