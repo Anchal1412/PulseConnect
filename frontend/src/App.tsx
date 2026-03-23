@@ -4,7 +4,7 @@ import Home from './views/Home';
 import Signup from './views/SignupView';
 import Login from './views/LoginView';
 import Dashboard from './views/Dashboard';
-import './App.css';
+
 
 const App: React.FC = () => {
   return (
