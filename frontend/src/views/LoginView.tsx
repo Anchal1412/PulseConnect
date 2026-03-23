@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../controllers/authController';
 
 import {
@@ -8,6 +8,7 @@ import {
   Input,
   Button,
   Sheet,
+  Snackbar,
 } from '@mui/joy';
 
 const Login: React.FC = () => {
@@ -16,6 +17,12 @@ const Login: React.FC = () => {
   const [form, setForm] = useState({
     email: '',
     password: '',
+  });
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    color: 'neutral' as 'neutral' | 'success' | 'danger',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,12 +34,21 @@ const Login: React.FC = () => {
     try {
       const data = await login(form);
 
+      // store token
       localStorage.setItem('token', data.token);
 
-      alert('Login successful');
-      navigate('/dashboard');
+      setSnackbar({
+        open: true,
+        message: 'Login successful',
+        color: 'success',
+      });
+      setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Login failed');
+      setSnackbar({
+        open: true,
+        message: err.message,
+        color: 'danger',
+      });
     }
   };
 
@@ -50,29 +66,23 @@ const Login: React.FC = () => {
       <Sheet
         sx={{
           width: '100%',
-          maxWidth: 480,
+          maxWidth: 520,
           p: 4,
-          borderRadius: '24px',
+          borderRadius: '20px',
           boxShadow: 'lg',
-          backdropFilter: 'blur(20px)',
-          animation: 'fadeIn 0.6s ease-out',
+          backdropFilter: 'blur(14px)',
         }}
       >
-        {/* Header */}
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <Typography
-            level="h2"
-            sx={{
-              fontWeight: 700,
-              background:
-                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Sign In
-          </Typography>
-        </Box>
+        <Typography
+          level="h2"
+          sx={{
+            textAlign: 'center',
+            mb: 2,
+            fontWeight: 700,
+          }}
+        >
+          Sign In
+        </Typography>
 
         {/* Form */}
         <Box
@@ -85,6 +95,7 @@ const Login: React.FC = () => {
         >
           <Input
             name="email"
+            type="email"
             placeholder="Email"
             onChange={handleChange}
             required
@@ -103,36 +114,49 @@ const Login: React.FC = () => {
             size="lg"
             sx={{
               mt: 1,
-              fontWeight: 600,
+              fontWeight: 700,
               background:
                 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              boxShadow: 'md',
               '&:hover': {
                 transform: 'translateY(-2px)',
-                boxShadow: 'lg',
+                boxShadow: 'md',
               },
             }}
           >
             Login
           </Button>
         </Box>
+
+        {/* Footer */}
+        <Typography
+          sx={{
+            textAlign: 'center',
+            mt: 2,
+          }}
+        >
+          Don't have an account?{' '}
+          <Link
+            to="/signup"
+            style={{
+              color: '#5469f2',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
+            Sign up
+          </Link>
+        </Typography>
       </Sheet>
 
-      {/* Animation */}
-      <style>
-        {`
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(20px) scale(0.95);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0) scale(1);
-            }
-          }
-        `}
-      </style>
+      <Snackbar
+        open={snackbar.open}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        color={snackbar.color}
+        variant="soft"
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {snackbar.message}
+      </Snackbar>
     </Box>
   );
 };

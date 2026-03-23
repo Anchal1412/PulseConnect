@@ -9,11 +9,17 @@ import {
   Button,
   Table,
   Sheet,
+  Snackbar,
 } from '@mui/joy';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    color: 'neutral' as 'neutral' | 'success' | 'danger',
+  });
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -32,7 +38,11 @@ const Dashboard: React.FC = () => {
           navigate('/login');
           return;
         }
-        alert(err.message);
+        setSnackbar({
+          open: true,
+          message: err.message,
+          color: 'danger',
+        });
       }
     };
 
@@ -46,7 +56,11 @@ const Dashboard: React.FC = () => {
       localStorage.removeItem('token');
       navigate('/');
     } catch (err: any) {
-      alert(err.message);
+      setSnackbar({
+        open: true,
+        message: err.message,
+        color: 'danger',
+      });
     }
   };
 
@@ -56,9 +70,17 @@ const Dashboard: React.FC = () => {
       try {
         const data = await fetchUsers(token);
         setUsers(data);
-        alert('Users refreshed successfully');
+        setSnackbar({
+          open: true,
+          message: 'Users refreshed successfully',
+          color: 'success',
+        });
       } catch {
-        alert('Failed to refresh users');
+        setSnackbar({
+          open: true,
+          message: 'Failed to refresh users',
+          color: 'danger',
+        });
       }
     }
   };
@@ -148,6 +170,16 @@ const Dashboard: React.FC = () => {
           </Sheet>
         )}
       </Sheet>
+
+      <Snackbar
+        open={snackbar.open}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        color={snackbar.color}
+        variant="soft"
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {snackbar.message}
+      </Snackbar>
     </Box>
   );
 };

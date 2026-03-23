@@ -8,6 +8,7 @@ import {
   Input,
   Button,
   Sheet,
+  Snackbar,
 } from '@mui/joy';
 
 const Signup: React.FC = () => {
@@ -19,6 +20,12 @@ const Signup: React.FC = () => {
     password: '',
   });
 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    color: 'neutral' as 'neutral' | 'success' | 'danger',
+  });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -27,10 +34,18 @@ const Signup: React.FC = () => {
     e.preventDefault();
     try {
       await signup(form);
-      alert('Signup successful. You can now log in.');
-      navigate('/login');
+      setSnackbar({
+        open: true,
+        message: 'Signup successful. You can now log in.',
+        color: 'success',
+      });
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Signup failed');
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || err.message || 'Signup failed',
+        color: 'danger',
+      });
     }
   };
 
@@ -136,6 +151,16 @@ const Signup: React.FC = () => {
           </Link>
         </Typography>
       </Sheet>
+
+      <Snackbar
+        open={snackbar.open}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        color={snackbar.color}
+        variant="soft"
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {snackbar.message}
+      </Snackbar>
     </Box>
   );
 };
