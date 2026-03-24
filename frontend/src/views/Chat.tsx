@@ -21,7 +21,7 @@ interface Message {
 interface RoomUser {
   socketId: string;
   userId: string;
-  email: string;
+  name: string;
 }
 
 const Chat: React.FC = () => {
@@ -31,13 +31,14 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [roomUsers, setRoomUsers] = useState<RoomUser[]>([]);
+  const [currentUser, setCurrentUser] = useState('');
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     color: 'neutral' as 'neutral' | 'success' | 'danger',
   });
 
-  // 🔥 Initialize WebSocket connection
+  // SOCKET CONNECTION
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -50,9 +51,17 @@ const Chat: React.FC = () => {
       return;
     }
 
+    // extract name from JWT
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setCurrentUser(payload.name);
+    } catch (err) {
+      console.error('Invalid token');
+    }
+
     socketRef.current = io('http://localhost:3001', {
       auth: {
-        token: token.trim(), // ✅ FIXED LINE
+        token: token.trim(),
       },
     });
 
@@ -63,7 +72,6 @@ const Chat: React.FC = () => {
         color: 'success',
       });
 
-      // Auto join room
       socketRef.current?.emit('join_room', { roomId: 'room1' });
     });
 
@@ -99,11 +107,12 @@ const Chat: React.FC = () => {
     };
   }, []);
 
-  // 🔥 Auto scroll
+  // AUTO SCROLL
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // SEND MESSAGE
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
@@ -125,53 +134,50 @@ const Chat: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f0f1f3' }}>
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          bgcolor: '#fff',
-        }}
-      >
-        {/* Header */}
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#e5ddd5' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        
+        {/*  HEADER */}
         <Sheet
           sx={{
             p: 2,
-            boxShadow: 'sm',
+            bgcolor: '#075e54',
+            color: '#fff',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
           }}
         >
           <Box>
-            <Typography level="h4">Room: room1</Typography>
-            <Typography level="body-sm">
-              Users online: {roomUsers.length}
+            <Typography level="h4">Chat Room</Typography>
+            <Typography level="body-sm" sx={{ color: '#fff' }}>
+              {roomUsers.length} online
             </Typography>
           </Box>
         </Sheet>
 
-        {/* Users */}
-        {roomUsers.length > 0 && (
-          <Sheet
-            sx={{
-              p: 2,
-              borderBottom: '1px solid #eee',
-              display: 'flex',
-              gap: 1,
-              flexWrap: 'wrap',
-            }}
-          >
-            {roomUsers.map((user) => (
-              <Chip key={user.socketId} color="primary" variant="soft" size="sm">
-                {user.email}
-              </Chip>
-            ))}
-          </Sheet>
-        )}
+        {/* USERS */}
+        <Sheet
+          sx={{
+            p: 1,
+            display: 'flex',
+            gap: 1,
+            flexWrap: 'wrap',
+            bgcolor: '#f0f0f0',
+          }}
+        >
+          {roomUsers.map((user) => (
+            <Chip
+              key={user.socketId}
+              size="sm"
+              variant={user.name === currentUser ? 'solid' : 'soft'}
+              color={user.name === currentUser ? 'success' : 'primary'}
+            >
+              {user.name} {user.name === currentUser && '(You)'}
+            </Chip>
+          ))}
+        </Sheet>
 
-        {/* Messages */}
+        {/* MESSAGES */}
         <Box
           sx={{
             flex: 1,
@@ -183,57 +189,84 @@ const Chat: React.FC = () => {
           }}
         >
           {messages.length === 0 ? (
-            <Typography
-              level="body-sm"
-              sx={{ textAlign: 'center', color: 'neutral.500', mt: 4 }}
-            >
-              No messages yet. Start the conversation!
+            <Typography textAlign="center">
+              Start chatting 
             </Typography>
           ) : (
-            messages.map((msg, idx) => (
-              <Box key={idx}>
-                {msg.isSystemMessage ? (
-                  <Typography
-                    level="body-xs"
-                    sx={{ textAlign: 'center', fontStyle: 'italic' }}
-                  >
-                    {msg.message}
-                  </Typography>
-                ) : (
-                  <Sheet sx={{ p: 1.5, borderRadius: 'lg', bgcolor: '#f0f1f3' }}>
-                    <Typography level="body-xs" sx={{ fontWeight: 600 }}>
-                      {msg.sender}
+            messages.map((msg, idx) => {
+              const isMe = msg.sender === currentUser;
+
+              return (
+                <Box
+                  key={idx}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: isMe ? 'flex-end' : 'flex-start',
+                  }}
+                >
+                  {msg.isSystemMessage ? (
+                    <Typography
+                      level="body-xs"
+                      sx={{ textAlign: 'center', width: '100%' }}
+                    >
+                      {msg.message}
                     </Typography>
-                    <Typography level="body-sm">{msg.message}</Typography>
-                    <Typography level="body-xs" sx={{ opacity: 0.7 }}>
-                      {formatTime(msg.timestamp)}
-                    </Typography>
-                  </Sheet>
-                )}
-              </Box>
-            ))
+                  ) : (
+                    <Sheet
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 'lg',
+                        maxWidth: '60%',
+                        bgcolor: isMe ? '#25d366' : '#fff',
+                        color: isMe ? '#000' : '#000',
+                      }}
+                    >
+                      {!isMe && (
+                        <Typography level="body-xs" fontWeight="bold">
+                          {msg.sender}
+                        </Typography>
+                      )}
+
+                      <Typography>{msg.message}</Typography>
+
+                      <Typography
+                        level="body-xs"
+                        sx={{ textAlign: 'right', opacity: 0.6 }}
+                      >
+                        {formatTime(msg.timestamp)}
+                      </Typography>
+                    </Sheet>
+                  )}
+                </Box>
+              );
+            })
           )}
           <div ref={messagesEndRef} />
         </Box>
 
-        {/* Input */}
-        <Sheet sx={{ p: 2, borderTop: '1px solid #eee' }}>
-          <Box component="form" onSubmit={handleSendMessage} sx={{ display: 'flex', gap: 1 }}>
+        {/* INPUT */}
+        <Sheet sx={{ p: 2, bgcolor: '#f0f0f0' }}>
+          <Box
+            component="form"
+            onSubmit={handleSendMessage}
+            sx={{ display: 'flex', gap: 1 }}
+          >
             <Textarea
               placeholder="Type a message..."
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              minRows={2}
+              minRows={1}
+              maxRows={3}
               sx={{ flex: 1 }}
             />
             <Button type="submit" disabled={!inputMessage.trim()}>
-              Send
+              Send 
             </Button>
           </Box>
         </Sheet>
       </Box>
 
-      {/* Snackbar */}
+      {/* SNACKBAR */}
       <Snackbar
         open={snackbar.open}
         onClose={() => setSnackbar({ ...snackbar, open: false })}

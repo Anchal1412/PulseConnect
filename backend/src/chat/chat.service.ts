@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 interface RoomUser {
   socketId: string;
   userId: string;
-  email: string;
+  name: string;
 }
 
 interface ChatRoom {

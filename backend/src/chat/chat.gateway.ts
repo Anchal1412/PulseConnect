@@ -12,12 +12,16 @@ import { ChatService } from './chat.service';
 interface SocketData {
   userId: string;
   email: string;
+  name: string;
 }
 
 interface JwtPayload {
   sub: string;
   email: string;
+  name: string;
 }
+
+const DEBUG = false; //  set true if you want logs
 
 @WebSocketGateway({
   cors: {
@@ -25,8 +29,7 @@ interface JwtPayload {
     credentials: true,
   },
 })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -39,44 +42,46 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect
     return client.data as SocketData;
   }
 
-  // 🔥 HANDLE CONNECTION (JWT AUTH)
+  //  HANDLE CONNECTION
   handleConnection(client: Socket) {
     try {
-      let token = client.handshake.auth.token as string;
+      const token = client.handshake.auth.token as string;
 
       if (!token) {
-        console.log('No token provided');
+        if (DEBUG) console.log('No token provided');
         client.disconnect();
         return;
       }
 
-      // ✅ Clean token (important fix)
-      token = token.replace(/'/g, '').trim();
+      // token = token.replace(/'/g, '').trim();
 
       const payload = this.jwtService.verify<JwtPayload>(token);
 
       const data = client.data as SocketData;
       data.userId = payload.sub;
       data.email = payload.email;
+      data['name'] = payload.name;
 
-      console.log(`✅ User connected: ${payload.email}`);
+      if (DEBUG) console.log(`User connected: ${payload.email}`);
     } catch (error) {
-      const errMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error('❌ WebSocket Auth Error:', errMsg);
+      if (DEBUG) {
+        const errMsg = error instanceof Error ? error.message : 'Unknown error';
+        console.error('WebSocket Auth Error:', errMsg);
+      }
       client.disconnect();
     }
   }
 
-  // 🔥 HANDLE DISCONNECT
+  //  DISCONNECT
   handleDisconnect(client: Socket) {
     const data = this.getClientData(client);
 
-    console.log(`❌ User disconnected: ${data?.email}`);
+    if (DEBUG) console.log(`User disconnected: ${data?.email}`);
 
     this.chatService.removeUserFromAllRooms(client.id);
   }
 
-  // 🔥 JOIN ROOM
+  // JOIN ROOM
   @SubscribeMessage('join_room')
   handleJoinRoom(client: Socket, payload: { roomId: string }) {
     const { roomId } = payload;
@@ -89,29 +94,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.chatService.addUserToRoom(roomId, {
       socketId: client.id,
       userId: clientData.userId,
-      email: clientData.email,
+      name: clientData.name,
     });
 
-    // System message
     this.server.to(roomId).emit('receive_message', {
-      message: `${clientData.email} joined the room`,
+      message: `${clientData.name} joined the room`,
       sender: 'System',
       senderId: 'system',
       timestamp: new Date(),
       isSystemMessage: true,
     });
 
-    // Send updated users list
     const roomUsers = this.chatService.getRoomUsers(roomId);
     this.server.to(roomId).emit('room_users', {
       users: roomUsers,
       count: roomUsers.length,
     });
 
-    console.log(`👤 ${clientData.email} joined room ${roomId}`);
+    if (DEBUG) console.log(`User ${clientData.email} joined room ${roomId}`);
   }
 
-  // 🔥 LEAVE ROOM
+  //  LEAVE ROOM
   @SubscribeMessage('leave_room')
   handleLeaveRoom(client: Socket, payload: { roomId: string }) {
     const { roomId } = payload;
@@ -121,7 +124,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.chatService.removeUserFromRoom(roomId, client.id);
 
     this.server.to(roomId).emit('receive_message', {
-      message: `${clientData.email} left the room`,
+      message: `${clientData.name} left the room`,
       sender: 'System',
       senderId: 'system',
       timestamp: new Date(),
@@ -134,10 +137,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect
       count: roomUsers.length,
     });
 
-    console.log(`🚪 ${clientData.email} left room ${roomId}`);
+    if (DEBUG) console.log(`User ${clientData.email} left room ${roomId}`);
   }
 
-  // 🔥 SEND MESSAGE
+  // SEND MESSAGE
   @SubscribeMessage('send_message')
   handleSendMessage(
     client: Socket,
@@ -150,18 +153,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     const messageData = {
       message,
-      sender: clientData.email,
+      sender: clientData.name,
       senderId: clientData.userId,
       timestamp: new Date(),
       isSystemMessage: false,
     };
 
     this.server.to(roomId).emit('receive_message', messageData);
-
-    console.log(`💬 ${clientData.email} in ${roomId}: ${message}`);
   }
 
-  // 🔥 GET USERS IN ROOM
+  // GET USERS
   @SubscribeMessage('get_room_users')
   handleGetRoomUsers(client: Socket, payload: { roomId: string }) {
     const { roomId } = payload;
