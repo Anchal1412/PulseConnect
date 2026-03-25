@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { fetchUsers, logout } from '../controllers/authController';
 import { User } from '../models/User';
 import Chat from './Chat';
+import ChatIcon from '@mui/icons-material/Chat';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 import {
   Box,
@@ -103,7 +106,7 @@ const Dashboard: React.FC = () => {
           p: 3,
           borderRadius: '20px',
           boxShadow: 'lg',
-          position: 'relative', // ✅ important for overlay
+          position: 'relative', 
         }}
       >
         {/* Header */}
@@ -122,16 +125,16 @@ const Dashboard: React.FC = () => {
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button onClick={() => setisChatMode((prev) => !prev)}>
-              {ischatmode ? 'Users Dashboard' : '💬 Chat'}
+            <Button  startDecorator={<ChatIcon />} onClick={() => setisChatMode((prev) => !prev)}>
+              {ischatmode ? 'Users Dashboard' : ' Chat'}
             </Button>
 
-            <Button onClick={handleRefresh}>
-              🔄 Refresh
+            <Button  startDecorator={<RefreshIcon />} onClick={handleRefresh}>
+               Refresh
             </Button>
 
-            <Button color="danger" onClick={handleLogout}>
-              🚪 Logout
+            <Button  startDecorator={<LogoutIcon />} color="danger" onClick={handleLogout}>
+              Logout
             </Button>
           </Box>
         </Box>
