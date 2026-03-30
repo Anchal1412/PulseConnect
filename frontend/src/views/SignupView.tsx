@@ -1,29 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { signup } from '../controllers/authController';
-
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { signup } from "../controllers/authController";
+import { SignupPayload, SnackbarType } from "../models/User";
+import { Box, Typography, Input, Button, Sheet, Snackbar } from "@mui/joy";
 import {
-  Box,
-  Typography,
-  Input,
-  Button,
-  Sheet,
-  Snackbar,
-} from '@mui/joy';
+  container,
+  footerText,
+  formStyle,
+  sheetStyle,
+  signupStyle,
+  title,
+  loginBtn,
+} from "./LoginStyle";
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
+  const [form, setForm] = useState<SignupPayload>({
+    name: "",
+    email: "",
+    password: "",
   });
 
-  const [snackbar, setSnackbar] = useState({
+  const [snackbar, setSnackbar] = useState<SnackbarType>({
     open: false,
-    message: '',
-    color: 'neutral' as 'neutral' | 'success' | 'danger',
+    message: "",
+    color: "neutral",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,60 +38,27 @@ const Signup: React.FC = () => {
       await signup(form);
       setSnackbar({
         open: true,
-        message: 'Signup successful. You can now log in.',
-        color: 'success',
+        message: "Signup successful. You can now log in.",
+        color: "success",
       });
-      setTimeout(() => navigate('/login'), 2000);
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || err.message || 'Signup failed',
-        color: 'danger',
+        message: err.response?.data?.message || err.message || "Signup failed",
+        color: "danger",
       });
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: 2,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      }}
-    >
-      <Sheet
-        sx={{
-          width: '100%',
-          maxWidth: 520,
-          p: 4,
-          borderRadius: '20px',
-          boxShadow: 'lg',
-          backdropFilter: 'blur(14px)',
-        }}
-      >
-        <Typography
-          level="h2"
-          sx={{
-            textAlign: 'center',
-            mb: 2,
-            fontWeight: 700,
-          }}
-        >
+    <Box sx={container}>
+      <Sheet sx={sheetStyle}>
+        <Typography level="h2" sx={title}>
           Create Account
         </Typography>
 
-        {/* Form */}
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            display: 'grid',
-            gap: 2,
-          }}
-        >
+        <Box component="form" onSubmit={handleSubmit} sx={formStyle}>
           <Input
             name="name"
             placeholder="Name"
@@ -113,40 +82,14 @@ const Signup: React.FC = () => {
             required
           />
 
-          <Button
-            type="submit"
-            size="lg"
-            sx={{
-              mt: 1,
-              fontWeight: 700,
-              background:
-                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: 'md',
-              },
-            }}
-          >
+          <Button type="submit" size="lg" sx={loginBtn}>
             Signup
           </Button>
         </Box>
 
-        {/* Footer */}
-        <Typography
-          sx={{
-            textAlign: 'center',
-            mt: 2,
-          }}
-        >
-          Already have an account?{' '}
-          <Link
-            to="/login"
-            style={{
-              color: '#5469f2',
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
-          >
+        <Typography sx={footerText}>
+          Already have an account?{" "}
+          <Link to="/login" style={signupStyle}>
             Login
           </Link>
         </Typography>
@@ -154,10 +97,10 @@ const Signup: React.FC = () => {
 
       <Snackbar
         open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        onClose={() => setSnackbar({ ...snackbar, message: '', open: false })}
         color={snackbar.color}
         variant="soft"
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         {snackbar.message}
       </Snackbar>
