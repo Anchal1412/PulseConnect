@@ -47,7 +47,7 @@ const Chat: React.FC<ChatProps> = ({
     color: 'neutral' as 'neutral' | 'success' | 'danger',
   });
 
-  // ✅ RECEIVE MESSAGE
+  // RECEIVE MESSAGE
   useEffect(() => {
     if (!socket) return;
 

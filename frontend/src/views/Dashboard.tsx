@@ -121,9 +121,9 @@ const [currentUser, setCurrentUser] = useState('');
         });
       });
   
-      socketRef.current.on('receive_message', (data: Message) => {
-        setMessages((prev) => [...prev, data]);
-      });
+      // socketRef.current.on('receive_message', (data: Message) => {
+      //   setMessages((prev) => [...prev, data]);
+      // });
   
       socketRef.current.on(
         'room_users',
