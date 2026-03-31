@@ -1,13 +1,12 @@
-export const container = {
+import { SxProps } from "@mui/joy/styles/types";
+
+export const container:SxProps= {
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
 };
 
-export const wrapper = {
-  pt: 3,
-};
 
-export const sheetStyle = {
+export const sheetStyle:SxProps= {
   maxWidth: 1200,
   mx: 'auto',
   p: 3,
@@ -19,7 +18,7 @@ export const sheetStyle = {
   flexDirection: 'column',
 };
 
-export const header = {
+export const header:SxProps = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -28,33 +27,33 @@ export const header = {
   gap: 2,
 };
 
-export const headerButtons = {
+export const headerButtons:SxProps = {
   display: 'flex',
   gap: 2,
 };
 
-export const contentWrapper = {
+export const contentWrapper:SxProps = {
   position: 'relative',
   minHeight: 0,
   flex: 1,
 };
 
-export const dashboardContent = (isChatMode: boolean) => ({
+export const dashboardContent = (isChatMode: boolean):SxProps => ({
   visibility: isChatMode ? 'hidden' : 'visible',
   height: '100%',
 });
 
-export const emptyState = {
+export const emptyState:SxProps = {
   textAlign: 'center',
   py: 5,
 };
 
-export const tableContainer = {
+export const tableContainer:SxProps = {
   overflow: 'auto',
   height: '100%',
 };
 
-export const statusStyle = (isOnline: boolean) => ({
+export const statusStyle = (isOnline: boolean): SxProps => ({
   display: 'inline-block',
   px: 1.5,
   py: 0.5,

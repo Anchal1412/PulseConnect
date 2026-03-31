@@ -15,7 +15,7 @@ import {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [form, setForm] = useState<SignupPayload>({
     name: "",
@@ -50,9 +50,6 @@ const Signup: React.FC = () => {
         message: err.response?.data?.message || err.message || "Signup failed",
         color: "danger",
       });
-    } finally {
-      setIsLoading(false);
-
     }
   };
 
@@ -96,7 +93,7 @@ const Signup: React.FC = () => {
 
         <Typography sx={footerText}>
           Already have an account?{" "}
-          <Link to="/login" style={signupStyle}>
+          <Link  to="/login" style={signupStyle}>
             Login
           </Link>
         </Typography>

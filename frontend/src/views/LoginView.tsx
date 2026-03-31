@@ -15,7 +15,7 @@ import {
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [form, setForm] = useState<LoginPayload>({
     email: "",
     password: "",

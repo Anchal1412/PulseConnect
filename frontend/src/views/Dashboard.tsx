@@ -43,11 +43,11 @@ const Dashboard: React.FC = () => {
     message: "",
     color: "neutral",
   });
-  const [ischatmode, setisChatMode] = useState(false);
+  const [ischatmode, setisChatMode] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [roomUsers, setRoomUsers] = useState<RoomUser[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
-  const [currentUser, setCurrentUser] = useState("");
+  const [currentUser, setCurrentUser] = useState<string>("");
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -281,7 +281,7 @@ const Dashboard: React.FC = () => {
 
       <Snackbar
         open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, message: '', open: false })}
+        onClose={() => setSnackbar({ ...snackbar, message: "", open: false })}
         color={snackbar.color}
         variant="soft"
         anchorOrigin={{ vertical: "top", horizontal: "center" }}

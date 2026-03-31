@@ -42,7 +42,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return client.data as SocketData;
   }
 
-  //  HANDLE CONNECTION
   handleConnection(client: Socket) {
     try {
       const token = client.handshake.auth.token as string;
@@ -52,8 +51,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.disconnect();
         return;
       }
-
-      // token = token.replace(/'/g, '').trim();
 
       const payload = this.jwtService.verify<JwtPayload>(token);
 
@@ -74,7 +71,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  //  DISCONNECT
   handleDisconnect(client: Socket) {
     const data = this.getClientData(client);
 
@@ -85,7 +81,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit('online_users', users);
   }
 
-  // JOIN ROOM
   @SubscribeMessage('join_room')
   handleJoinRoom(client: Socket, payload: { roomId: string }) {
     const { roomId } = payload;
@@ -109,7 +104,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       isSystemMessage: true,
     });
 
-    // 👇 GLOBAL ROOM USERS EMIT
     const roomUsers = this.chatService.getRoomUsers(roomId);
     this.server.to(roomId).emit('room_users', {
       users: roomUsers,
@@ -120,7 +114,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (DEBUG) console.log(`User ${clientData.email} joined room ${roomId}`);
   }
 
-  //  LEAVE ROOM
   @SubscribeMessage('leave_room')
   handleLeaveRoom(client: Socket, payload: { roomId: string }) {
     const { roomId } = payload;
@@ -145,7 +138,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (DEBUG) console.log(`User ${clientData.email} left room ${roomId}`);
   }
 
-  // SEND MESSAGE
   @SubscribeMessage('send_message')
   handleSendMessage(
     client: Socket,
@@ -167,7 +159,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(roomId).emit('receive_message', messageData);
   }
 
-  // GET USERS
   @SubscribeMessage('get_room_users')
   handleGetRoomUsers(client: Socket, payload: { roomId: string }) {
     const { roomId } = payload;

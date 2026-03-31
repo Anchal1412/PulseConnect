@@ -1,4 +1,6 @@
-export const container = {
+import { SxProps } from "@mui/joy/styles/types";
+
+export const container:SxProps = {
   minHeight: '100vh',
   display: 'flex',
   alignItems: 'center',
@@ -7,7 +9,7 @@ export const container = {
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
 };
 
-export const sheetStyle = {
+export const sheetStyle:SxProps = {
   width: '100%',
   maxWidth: 520,
   p: 4,
@@ -16,18 +18,18 @@ export const sheetStyle = {
   backdropFilter: 'blur(14px)',
 };
 
-export const title = {
+export const title:SxProps = {
   textAlign: 'center',
   mb: 2,
   fontWeight: 700,
 };
 
-export const formStyle = {
+export const formStyle:SxProps = {
   display: 'grid',
   gap: 2,
 };
 
-export const loginBtn = {
+export const loginBtn:SxProps = {
   mt: 1,
   fontWeight: 700,
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -37,12 +39,12 @@ export const loginBtn = {
   },
 };
 
-export const footerText = {
+export const footerText:SxProps = {
   textAlign: 'center',
   mt: 2,
 };
 
-export const signupStyle = {
+export const signupStyle:React.CSSProperties= {
   color: '#5469f2',
   fontWeight: 600,
   textDecoration: 'none',
