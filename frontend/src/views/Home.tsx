@@ -8,7 +8,6 @@ import {
   secondaryBtn,
   subtitle,
   title,
-  bgAnimation,
   content,
 } from "./HomeStyle";
 
@@ -25,7 +24,6 @@ export default function Home() {
 
   return (
     <Box sx={container}>
-      <Box sx={bgAnimation} />
 
       <Box sx={content}>
         <Typography level="h1" sx={title}>
