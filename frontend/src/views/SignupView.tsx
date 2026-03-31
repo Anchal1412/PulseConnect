@@ -15,6 +15,7 @@ import {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [form, setForm] = useState<SignupPayload>({
     name: "",
@@ -34,6 +35,7 @@ const Signup: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       await signup(form);
       setSnackbar({
@@ -48,6 +50,9 @@ const Signup: React.FC = () => {
         message: err.response?.data?.message || err.message || "Signup failed",
         color: "danger",
       });
+    } finally {
+      setIsLoading(false);
+
     }
   };
 
@@ -82,7 +87,9 @@ const Signup: React.FC = () => {
             required
           />
 
-          <Button type="submit" size="lg" sx={loginBtn}>
+          <Button 
+          loading={isLoading}
+          disabled={!form.email || !form.password || !form.name} type="submit" size="lg" sx={loginBtn}>
             Signup
           </Button>
         </Box>
