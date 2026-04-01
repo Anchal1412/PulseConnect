@@ -128,7 +128,7 @@ const Dashboard: React.FC = () => {
     return () => {
       socketRef.current?.disconnect();
     };
-  }, []);
+  }, [socketRef.current]);
 
   const handleLogout = async () => {
     try {
