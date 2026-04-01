@@ -7,7 +7,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { io, Socket } from "socket.io-client";
-
+import { Message, RoomUser} from "../models/User";
 import { Box, Typography, Button, Table, Sheet, Snackbar } from "@mui/joy";
 import {
   container,
@@ -21,18 +21,6 @@ import {
   tableContainer,
 } from "./dashboardStyle";
 
-interface Message {
-  message: string;
-  sender: string;
-  senderId: string;
-  timestamp: Date;
-  isSystemMessage?: boolean;
-}
-interface RoomUser {
-  socketIds: string[];
-  userId: string;
-  name: string;
-}
 
 const Dashboard: React.FC = () => {
   const socketRef = useRef<Socket | null>(null);
