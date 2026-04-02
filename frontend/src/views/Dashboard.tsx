@@ -84,18 +84,16 @@ const Dashboard: React.FC = () => {
     // extract name from JWT
     const storedData = localStorage.getItem("data");
 
-if (storedData) {
-  const parsed = JSON.parse(storedData);
-  setCurrentUser(parsed.name);
-}
+    if (storedData) {
+      const parsed = JSON.parse(storedData);
+      setCurrentUser(parsed.name);
+    }
 
     socketRef.current = io("http://localhost:3001", {
       auth: {
         token: token,
+        transports: ["websocket"],
       },
-    });
-    socketRef.current?.onAny((event, data) => {
-      console.log("EVENT:", event, data);
     });
 
     socketRef.current.on("connect", () => {
