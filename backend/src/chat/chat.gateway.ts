@@ -82,13 +82,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join_room')
-  handleJoinRoom(client: Socket, payload: { roomId: string }) {
+  async handleJoinRoom(client: Socket, payload: { roomId: string }) {
     const { roomId } = payload;
     const clientData = this.getClientData(client);
 
     if (!roomId) return;
 
-    client.join(roomId);
+    await client.join(roomId);
 
     this.chatService.addUserToRoom(roomId, {
       socketId: client.id,
