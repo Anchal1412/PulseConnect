@@ -1,4 +1,5 @@
 import { ColorPaletteProp } from "@mui/joy/styles/types/colorSystem";
+import { Socket } from "socket.io-client";
 
 export interface User {
   _id: string;
@@ -32,7 +33,7 @@ export interface Message {
   sender: string;
   senderId: string;
   timestamp: Date;
-  isSystemMessage?: boolean;
+  isSystemMessage: boolean;
 }
 
 export interface RoomUser {
@@ -42,7 +43,7 @@ export interface RoomUser {
 }
 
 export interface ChatProps {
-  socket: any;
+  socket:  Socket | null;
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   roomUsers: RoomUser[];

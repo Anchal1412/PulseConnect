@@ -57,7 +57,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const data = client.data as SocketData;
       data.userId = payload.sub;
       data.email = payload.email;
-      data['name'] = payload.name;
+      data.name = payload.name;
       const users = this.chatService.getRoomUsers('room1');
       this.server.emit('online_users', users);
 
@@ -115,7 +115,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('leave_room')
-  handleLeaveRoom(client: Socket, payload: { roomId: string }) {
+  async handleLeaveRoom(client: Socket, payload: { roomId: string }) {
     const { roomId } = payload;
     const clientData = this.getClientData(client);
 
@@ -127,7 +127,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       isSystemMessage: true,
     });
     this.chatService.removeUserFromRoom(roomId, client.id);
-    client.leave(roomId);
+    await client.leave(roomId);
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
     this.server.to(roomId).emit('room_users', {
