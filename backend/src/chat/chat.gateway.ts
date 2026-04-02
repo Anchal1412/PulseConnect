@@ -102,6 +102,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       senderId: clientData.userId,
       timestamp: new Date(),
       isSystemMessage: true,
+      action: 'JOIN',
     });
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
@@ -125,6 +126,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       senderId: 'system',
       timestamp: new Date(),
       isSystemMessage: true,
+      action: 'LEAVE',
     });
     this.chatService.removeUserFromRoom(roomId, client.id);
     await client.leave(roomId);
