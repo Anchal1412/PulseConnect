@@ -38,7 +38,7 @@ const Login: React.FC = () => {
       const data = await login(form);
 
      
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("data", JSON.stringify(data));
 
       setSnackbar({
         open: true,

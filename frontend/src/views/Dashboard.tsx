@@ -7,7 +7,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { io, Socket } from "socket.io-client";
-import { Message, RoomUser} from "../models/User";
+import { Message, RoomUser } from "../models/User";
 import { Box, Typography, Button, Table, Sheet, Snackbar } from "@mui/joy";
 import {
   container,
@@ -20,7 +20,6 @@ import {
   statusStyle,
   tableContainer,
 } from "./dashboardStyle";
-
 
 const Dashboard: React.FC = () => {
   const socketRef = useRef<Socket | null>(null);
@@ -40,7 +39,10 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("data")
+          ? JSON.parse(localStorage.getItem("data") || "").token
+          : null;
+
         if (!token) {
           navigate("/login");
           return;
@@ -66,7 +68,9 @@ const Dashboard: React.FC = () => {
   }, [navigate]);
   // SOCKET CONNECTION
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("data")
+      ? JSON.parse(localStorage.getItem("data") || "").token
+      : null;
 
     if (!token) {
       setSnackbar({
@@ -78,12 +82,12 @@ const Dashboard: React.FC = () => {
     }
 
     // extract name from JWT
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setCurrentUser(payload.name);
-    } catch (err) {
-      console.error("Invalid token");
-    }
+    const storedData = localStorage.getItem("data");
+
+if (storedData) {
+  const parsed = JSON.parse(storedData);
+  setCurrentUser(parsed.name);
+}
 
     socketRef.current = io("http://localhost:3001", {
       auth: {
@@ -133,9 +137,12 @@ const Dashboard: React.FC = () => {
   const handleLogout = async () => {
     try {
       socketRef.current?.emit("leave_room", { roomId: "room1" });
-      const token = localStorage.getItem("token") || "";
+      const token = localStorage.getItem("data")
+        ? JSON.parse(localStorage.getItem("data") || "").token
+        : null;
+
       await logout(token);
-      localStorage.removeItem("token");
+      localStorage.removeItem("data");
       navigate("/");
     } catch (err: any) {
       setSnackbar({
@@ -147,7 +154,10 @@ const Dashboard: React.FC = () => {
   };
 
   const handleRefresh = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("data")
+      ? JSON.parse(localStorage.getItem("data") || "").token
+      : null;
+
     if (token) {
       try {
         const data = await fetchUsers(token);

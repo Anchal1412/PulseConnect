@@ -21,7 +21,7 @@ interface JwtPayload {
   name: string;
 }
 
-const DEBUG = false;
+const DEBUG = process.env.DEBUG === 'true';
 
 @WebSocketGateway({
   cors: {

@@ -15,16 +15,24 @@ export default function Home() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    try {
+      const data = localStorage.getItem("data");
 
-    if (token) {
-      navigate("/dashboard");
+      if (!data) return;
+
+      const parsedData = JSON.parse(data);
+      const token = parsedData?.token;
+
+      if (token) {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Invalid localStorage data");
     }
   }, [navigate]);
 
   return (
     <Box sx={container}>
-
       <Box sx={content}>
         <Typography level="h1" sx={title}>
           Welcome to PulseConnect

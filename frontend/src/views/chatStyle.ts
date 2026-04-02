@@ -35,7 +35,7 @@ export const messageRow = (isMe: boolean): SxProps => ({
   display: "flex",
   justifyContent: isMe ? "flex-end" : "flex-start",
 });
-  
+
 export const systemMessageStyle: SxProps = {
   textAlign: "center",
   width: "100%",
