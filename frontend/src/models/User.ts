@@ -1,3 +1,6 @@
+import { ColorPaletteProp } from "@mui/joy/styles/types/colorSystem";
+import { Socket } from "socket.io-client";
+
 export interface User {
   _id: string;
   name: string;
@@ -17,5 +20,36 @@ export interface LoginPayload {
 }
 
 export interface AuthResponse {
+ id: string;
+  name: string;
+  email: string;
   token: string;
+}
+
+export interface SnackbarType {
+  open: boolean;
+  message: string;
+  color: ColorPaletteProp;
+};
+export interface Message {
+  action: string;
+  message: string;
+  sender: string;
+  senderId: string;
+  timestamp: Date;
+  isSystemMessage: boolean;
+}
+
+export interface RoomUser {
+  socketIds: string[];
+  userId: string;
+  name: string;
+}
+
+export interface ChatProps {
+  socket:  Socket | null;
+  messages: Message[];
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  roomUsers: RoomUser[];
+  currentUser: string;
 }

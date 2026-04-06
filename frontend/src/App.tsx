@@ -1,10 +1,9 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './views/Home';
-import Signup from './views/SignupView';
-import Login from './views/LoginView';
-import Dashboard from './views/Dashboard';
-
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./views/Home";
+import Signup from "./views/SignupView";
+import Login from "./views/LoginView";
+import Dashboard from "./views/Dashboard";
 
 const App: React.FC = () => {
   return (
