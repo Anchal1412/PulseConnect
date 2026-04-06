@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Button } from "@mui/joy";
-import useToken from "../Hooks/useToken";
 import {
   buttonGroup,
   container,
@@ -12,21 +11,25 @@ import {
   content,
 } from "./HomeStyle";
 
-
-
 export default function Home() {
   const navigate = useNavigate();
-  const {token} = useToken();
 
   useEffect(() => {
     try {
+      const data = localStorage.getItem("data");
+
+      if (!data) return;
+
+      const parsedData = JSON.parse(data);
+      const token = parsedData?.token;
+
       if (token) {
         navigate("/dashboard");
       }
     } catch (error) {
       console.error("Invalid localStorage data");
     }
-  }, [token, navigate]);
+  }, [navigate]);
 
   return (
     <Box sx={container}>

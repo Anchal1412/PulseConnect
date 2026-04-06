@@ -9,7 +9,6 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { io, Socket } from "socket.io-client";
 import { Message, RoomUser } from "../models/User";
 import { Box, Typography, Button, Table, Sheet, Snackbar } from "@mui/joy";
-import useToken from "../Hooks/useToken";
 import {
   container,
   contentWrapper,
@@ -36,12 +35,14 @@ const Dashboard: React.FC = () => {
   const [roomUsers, setRoomUsers] = useState<RoomUser[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<string>("");
-  const {token} = useToken();
-
 
   useEffect(() => {
     const loadUsers = async () => {
       try {
+        const token = localStorage.getItem("data")
+          ? JSON.parse(localStorage.getItem("data") || "").token
+          : null;
+
         if (!token) {
           navigate("/login");
           return;
@@ -51,7 +52,7 @@ const Dashboard: React.FC = () => {
         setUsers(data);
       } catch (err: any) {
         if (err.message?.toLowerCase().includes("unauthorized")) {
-          localStorage.removeItem("data");
+          localStorage.removeItem("token");
           navigate("/login");
           return;
         }
@@ -64,9 +65,13 @@ const Dashboard: React.FC = () => {
     };
 
     loadUsers();
-  }, [token, navigate]);
+  }, [navigate]);
   // SOCKET CONNECTION
   useEffect(() => {
+    const token = localStorage.getItem("data")
+      ? JSON.parse(localStorage.getItem("data") || "").token
+      : null;
+
     if (!token) {
       setSnackbar({
         open: true,
@@ -76,6 +81,7 @@ const Dashboard: React.FC = () => {
       return;
     }
 
+    // extract name from JWT
     const storedData = localStorage.getItem("data");
 
     if (storedData) {
@@ -86,8 +92,8 @@ const Dashboard: React.FC = () => {
     socketRef.current = io("http://localhost:3001", {
       auth: {
         token: token,
+        transports: ["websocket"],
       },
-      transports: ["websocket"],
     });
 
     socketRef.current.on("connect", () => {
@@ -124,13 +130,14 @@ const Dashboard: React.FC = () => {
     return () => {
       socketRef.current?.disconnect();
     };
-  }, [token]);
+  }, [socketRef.current]);
 
   const handleLogout = async () => {
-    if(!token) return;
     try {
       socketRef.current?.emit("leave_room", { roomId: "room1" });
-      
+      const token = localStorage.getItem("data")
+        ? JSON.parse(localStorage.getItem("data") || "").token
+        : null;
 
       await logout(token);
       localStorage.removeItem("data");
@@ -145,6 +152,10 @@ const Dashboard: React.FC = () => {
   };
 
   const handleRefresh = async () => {
+    const token = localStorage.getItem("data")
+      ? JSON.parse(localStorage.getItem("data") || "").token
+      : null;
+
     if (token) {
       try {
         const data = await fetchUsers(token);
