@@ -21,9 +21,6 @@ export class Message {
   timestamp: Date;
 
   @Prop({ type: [String], default: [] })
-  deliveredTo: string[];
-
-  @Prop({ type: [String], default: [] })
   pendingFor: string[];
 
   @Prop({ default: false })

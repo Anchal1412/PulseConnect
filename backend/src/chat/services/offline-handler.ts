@@ -44,7 +44,6 @@ export class OfflineHandler {
         roomId: 'room1',
         message,
         timestamp: new Date(),
-        deliveredTo: [senderId],
         pendingFor: offlineUsers,
         isSystemMessage,
       });
@@ -74,10 +73,6 @@ export class OfflineHandler {
 
     for (const msg of messages) {
       msg.pendingFor = msg.pendingFor.filter((id) => id !== userId);
-
-      if (!msg.deliveredTo.includes(userId)) {
-        msg.deliveredTo.push(userId);
-      }
 
       // Delete if all users have received it
       if (msg.pendingFor.length === 0) {
