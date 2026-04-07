@@ -102,6 +102,14 @@ const Dashboard: React.FC = () => {
       });
     });
 
+    socketRef.current.on("receive_message", (data: Message) => {
+      setMessages((prev) => [...prev, data]);
+    });
+
+    socketRef.current.on("recent_messages", (messages: Message[]) => {
+      setMessages((prev) => [...prev, ...messages]);
+    });
+
     socketRef.current.on(
       "room_users",
       (data: { users: RoomUser[]; count: number }) => {

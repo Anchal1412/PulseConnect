@@ -8,6 +8,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
+import { OfflineHandler } from './services/offline-handler';
 
 interface SocketData {
   userId: string;
@@ -36,6 +37,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private chatService: ChatService,
     private jwtService: JwtService,
+    private offlineHandler: OfflineHandler,
   ) {}
 
   private getClientData(client: Socket): SocketData {
@@ -96,6 +98,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       name: clientData.name,
     });
 
+    const pendingMessages = await this.offlineHandler.getPendingMessages(
+      clientData.userId,
+    );
+
+    if (pendingMessages.length > 0) {
+      const messagesToSend = pendingMessages.map((msg) => ({
+        message: msg.message,
+        sender: msg.senderName,
+        senderId: msg.senderId,
+        timestamp: msg.timestamp,
+        isSystemMessage: msg.isSystemMessage,
+      }));
+
+      client.emit('recent_messages', messagesToSend);
+
+      // Mark all messages as delivered for this user
+      await this.offlineHandler.markAllMessagesAsDelivered(clientData.userId);
+
+      if (DEBUG)
+        console.log(
+          `Sent ${pendingMessages.length} offline messages to user ${clientData.email}`,
+        );
+    }
+
     this.server.to(roomId).emit('receive_message', {
       message: `${clientData.name} joined the room`,
       sender: clientData.name,
@@ -128,10 +154,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       isSystemMessage: true,
       action: 'LEAVE',
     });
+
     this.chatService.removeUserFromRoom(roomId, client.id);
     await client.leave(roomId);
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
+
+    // Save leave message for offline users
+    await this.offlineHandler.handleMessageForOfflineUsers(
+      'system',
+      'System',
+      `${clientData.name} left the room`,
+      roomUsers,
+      true,
+    );
+
     this.server.to(roomId).emit('room_users', {
       users: roomUsers,
       count: roomUsers.length,
@@ -141,7 +178,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('send_message')
-  handleSendMessage(
+  async handleSendMessage(
     client: Socket,
     payload: { roomId: string; message: string },
   ) {
@@ -159,6 +196,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     };
 
     this.server.to(roomId).emit('receive_message', messageData);
+
+    const roomUsers = this.chatService.getRoomUsers(roomId);
+
+    // Save message for offline users
+    await this.offlineHandler.handleMessageForOfflineUsers(
+      clientData.userId,
+      clientData.name,
+      message,
+      roomUsers,
+      false,
+    );
   }
 
   @SubscribeMessage('get_room_users')

@@ -20,6 +20,12 @@ export class Message {
   @Prop({ required: true })
   timestamp: Date;
 
+  @Prop({ type: [String], default: [] })
+  deliveredTo: string[];
+
+  @Prop({ type: [String], default: [] })
+  pendingFor: string[];
+
   @Prop({ default: false })
   isSystemMessage: boolean;
 }

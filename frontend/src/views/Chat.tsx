@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Box,
-  Button,
-  Sheet,
-  Typography,
-  Chip,
-  Snackbar,
-  Textarea,
-} from "@mui/joy";
-import { ChatProps, Message, SnackbarType } from "../models/User";
+import { Box, Button, Sheet, Typography, Chip, Textarea } from "@mui/joy";
+import { ChatProps } from "../models/User";
 import {
   chatWrapper,
   container,
@@ -31,51 +23,6 @@ const Chat: React.FC<ChatProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [inputMessage, setInputMessage] = useState<string>("");
-  const [snackbar, setSnackbar] = useState<SnackbarType>({
-    open: false,
-    message: "",
-    color: "neutral",
-  });
-
-  
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on("receive_message", (data: Message) => {
-      setMessages((prev) => [...prev, data]);
-    });
-
-    socket.on("connect", () => {
-      setSnackbar({
-        open: true,
-        message: "Connected to chat server",
-        color: "success",
-      });
-    });
-
-    socket.on("disconnect", () => {
-      setSnackbar({
-        open: true,
-        message: "Disconnected from chat server",
-        color: "danger",
-      });
-    });
-
-    socket.on("error", (error: any) => {
-      setSnackbar({
-        open: true,
-        message: `Error: ${error}`,
-        color: "danger",
-      });
-    });
-
-    return () => {
-      socket.off("receive_message");
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("error");
-    };
-  }, [socket, setMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -184,13 +131,6 @@ const Chat: React.FC<ChatProps> = ({
         </Sheet>
       </Box>
 
-      <Snackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, message: '', open: false })}
-        color={snackbar.color}
-      >
-        {snackbar.message}
-      </Snackbar>
     </Box>
   );
 };
