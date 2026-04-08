@@ -28,8 +28,7 @@ const Chat: React.FC<ChatProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
+  const sendMessage = () => {
     if (!inputMessage.trim()) return;
 
     socket?.emit("send_message", {
@@ -38,6 +37,20 @@ const Chat: React.FC<ChatProps> = ({
     });
 
     setInputMessage("");
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage();
+  };
+
+  const handleTextareaKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   };
 
   const formatTime = (timestamp: Date) => {
@@ -62,7 +75,7 @@ const Chat: React.FC<ChatProps> = ({
               {user.name} {user.name === currentUser && "(You)"}
             </Chip>
           ))}
-        </Sheet>
+        </Sheet> 
 
         <Box sx={messagesContainer}>
           {messages.length === 0 ? (
@@ -120,6 +133,7 @@ const Chat: React.FC<ChatProps> = ({
               placeholder="Type a message..."
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={handleTextareaKeyDown}
               minRows={1}
               maxRows={3}
               sx={{ flex: 1 }}
