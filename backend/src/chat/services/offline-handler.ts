@@ -23,6 +23,7 @@ export class OfflineHandler {
     senderName: string,
     message: string,
     onlineUsers: RoomUser[],
+    roomId: string,
     isSystemMessage: boolean = false,
   ): Promise<void> {
     const allUsers = await this.userModel.find().lean().exec();
@@ -41,30 +42,29 @@ export class OfflineHandler {
       return;
     }
 
-    if (offlineUsers.length > 0) {
-      // Save message with pending users
-      await this.messageModel.create({
-        senderId,
-        senderName,
-        roomId: 'room1',
-        message,
-        timestamp: new Date(),
-        pendingFor: offlineUsers,
-        isSystemMessage,
-      });
+    // Save message for all room users in DB, including pending offline users.
+    await this.messageModel.create({
+      senderId,
+      senderName,
+      roomId,
+      message,
+      timestamp: new Date(),
+      pendingFor: offlineUsers,
+      isSystemMessage,
+    });
 
-      if (process.env.DEBUG === 'true') {
-        console.log(
-          `Message saved for offline users: ${offlineUsers.join(', ')}`,
-        );
-      }
+    if (process.env.DEBUG === 'true') {
+      console.log(
+        `Message saved for offline users: ${offlineUsers.join(', ')}`,
+      );
     }
   }
 
-  async getPendingMessages(userId: string): Promise<Message[]> {
+  async getPendingMessages(userId: string, roomId: string): Promise<Message[]> {
     return this.messageModel
       .find({
         pendingFor: userId,
+        roomId,
       })
       .sort({ timestamp: 1 })
       .lean()

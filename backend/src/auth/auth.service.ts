@@ -27,6 +27,7 @@ export class AuthService {
       sub: user._id,
       email: user.email,
       name: user.name,
+      roomId: user.roomId || 'room1',
     };
 
     const token = this.jwtService.sign(payload);

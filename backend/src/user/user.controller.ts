@@ -1,4 +1,5 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -14,7 +15,8 @@ export class UserController {
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
-  getAllUsers() {
-    return this.userService.getAllUsers();
+  getUsers(@Req() req: Request) {
+    const user = req.user as { roomId?: string };
+    return this.userService.getUsersByRoom(user.roomId || 'room1');
   }
 }

@@ -14,6 +14,9 @@ export class User {
   @Prop()
   password: string;
 
+  @Prop({ default: 'room1' })
+  roomId: string;
+
   @Prop({ default: true })
   status: boolean;
 }

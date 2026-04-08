@@ -14,12 +14,14 @@ interface SocketData {
   userId: string;
   email: string;
   name: string;
+  roomId: string;
 }
 
 interface JwtPayload {
   sub: string;
   email: string;
   name: string;
+  roomId: string;
 }
 
 const DEBUG = process.env.DEBUG === 'true';
@@ -60,7 +62,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       data.userId = payload.sub;
       data.email = payload.email;
       data.name = payload.name;
-      const users = this.chatService.getRoomUsers('room1');
+      data.roomId = payload.roomId || 'room1';
+      const users = this.chatService.getRoomUsers(data.roomId);
       this.server.emit('online_users', users);
 
       if (DEBUG) console.log(`User connected: ${payload.email}`);
@@ -79,14 +82,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (DEBUG) console.log(`User disconnected: ${data?.email}`);
 
     this.chatService.removeUserFromAllRooms(client.id);
-    const users = this.chatService.getRoomUsers('room1');
+    const users = this.chatService.getRoomUsers(data?.roomId || 'room1');
     this.server.emit('online_users', users);
   }
 
   @SubscribeMessage('join_room')
-  async handleJoinRoom(client: Socket, payload: { roomId: string }) {
-    const { roomId } = payload;
+  async handleJoinRoom(client: Socket) {
     const clientData = this.getClientData(client);
+    const roomId = clientData.roomId;
 
     if (!roomId) return;
 
@@ -100,6 +103,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const pendingMessages = await this.offlineHandler.getPendingMessages(
       clientData.userId,
+      roomId,
     );
 
     if (pendingMessages.length > 0) {
@@ -142,9 +146,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('leave_room')
-  async handleLeaveRoom(client: Socket, payload: { roomId: string }) {
-    const { roomId } = payload;
+  async handleLeaveRoom(client: Socket) {
     const clientData = this.getClientData(client);
+    const roomId = clientData.roomId;
 
     this.server.to(roomId).emit('receive_message', {
       message: `${clientData.name} left the room`,
@@ -169,17 +173,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('send_message')
-  async handleSendMessage(
-    client: Socket,
-    payload: { roomId: string; message: string },
-  ) {
-    const { roomId, message } = payload;
+  async handleSendMessage(client: Socket, payload: { message: string }) {
     const clientData = this.getClientData(client);
+    const roomId = clientData.roomId;
 
-    if (!message.trim()) return;
+    if (!payload.message.trim()) return;
 
     const messageData = {
-      message,
+      message: payload.message,
       sender: clientData.name,
       senderId: clientData.userId,
       timestamp: new Date(),
@@ -194,8 +195,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.offlineHandler.handleMessageForOfflineUsers(
       clientData.userId,
       clientData.name,
-      message,
+      payload.message,
       roomUsers,
+      roomId,
       false,
     );
   }

@@ -31,7 +31,7 @@ export class UserService {
     return this.userModel.findOne({ email });
   }
 
-  async getAllUsers() {
-    return this.userModel.find().select('-password').exec();
+  async getUsersByRoom(roomId: string) {
+    return this.userModel.find({ roomId }).select('-password').exec();
   }
 }

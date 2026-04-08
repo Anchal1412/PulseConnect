@@ -36,7 +36,8 @@ const Dashboard: React.FC = () => {
   const [roomUsers, setRoomUsers] = useState<RoomUser[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<string>("");
-  const {token} = useToken();
+  const [currentRoom, setCurrentRoom] = useState<string>("room1");
+  const { token, payload } = useToken();
 
 
   useEffect(() => {
@@ -83,6 +84,9 @@ const Dashboard: React.FC = () => {
       setCurrentUser(parsed.name);
     }
 
+    const roomId = payload?.roomId ?? "room1";
+    setCurrentRoom(roomId);
+
     socketRef.current = io("http://localhost:3001", {
       auth: {
         token: token,
@@ -91,7 +95,7 @@ const Dashboard: React.FC = () => {
     });
 
     socketRef.current.on("connect", () => {
-      socketRef.current?.emit("join_room", { roomId: "room1" });
+      socketRef.current?.emit("join_room");
     });
 
     socketRef.current.on("disconnect", () => {
@@ -132,13 +136,14 @@ const Dashboard: React.FC = () => {
     return () => {
       socketRef.current?.disconnect();
     };
-  }, [token]);
+  }, [payload?.roomId, token]);
 
   const handleLogout = async () => {
     if(!token) return;
     try {
-      socketRef.current?.emit("leave_room", { roomId: "room1" });
+      socketRef.current?.emit("leave_room");
       
+
 
       await logout(token);
       localStorage.removeItem("data");
@@ -265,6 +270,7 @@ const Dashboard: React.FC = () => {
                   setMessages={setMessages}
                   roomUsers={roomUsers}
                   currentUser={currentUser}
+                  roomId={currentRoom}
                 />
               </Box>
             )}

@@ -19,6 +19,7 @@ const Chat: React.FC<ChatProps> = ({
   setMessages,
   roomUsers,
   currentUser,
+  roomId,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +33,6 @@ const Chat: React.FC<ChatProps> = ({
     if (!inputMessage.trim()) return;
 
     socket?.emit("send_message", {
-      roomId: "room1",
       message: inputMessage,
     });
 
