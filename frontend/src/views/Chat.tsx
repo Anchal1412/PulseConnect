@@ -89,11 +89,9 @@ const Chat: React.FC<ChatProps> = ({
                   {msg.isSystemMessage ? (
                     <Typography level="body-xs" sx={systemMessageStyle}>
                       {msg.sender === currentUser
-                        ? msg.action==="JOIN"
+                        ? msg.isJoin
                           ? "You joined"
-                          : msg.action==="LEAVE"
-                            ? "You left"
-                            : msg.message
+                          : "You left"
                         : msg.message.replace("the room", "")}
                     </Typography>
                   ) : (

@@ -128,7 +128,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       senderId: clientData.userId,
       timestamp: new Date(),
       isSystemMessage: true,
-      action: 'JOIN',
+      isJoin: true,
     });
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
@@ -152,22 +152,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       senderId: 'system',
       timestamp: new Date(),
       isSystemMessage: true,
-      action: 'LEAVE',
+      isJoin: false,
     });
 
     this.chatService.removeUserFromRoom(roomId, client.id);
     await client.leave(roomId);
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
-
-    // Save leave message for offline users
-    await this.offlineHandler.handleMessageForOfflineUsers(
-      'system',
-      'System',
-      `${clientData.name} left the room`,
-      roomUsers,
-      true,
-    );
 
     this.server.to(roomId).emit('room_users', {
       users: roomUsers,

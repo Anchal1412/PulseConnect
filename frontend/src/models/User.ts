@@ -32,12 +32,12 @@ export interface SnackbarType {
   color: ColorPaletteProp;
 };
 export interface Message {
-  action: string;
   message: string;
   sender: string;
   senderId: string;
   timestamp: Date;
   isSystemMessage: boolean;
+  isJoin?: boolean;
 }
 
 export interface RoomUser {

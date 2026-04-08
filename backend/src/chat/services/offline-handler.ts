@@ -36,6 +36,11 @@ export class OfflineHandler {
       (userId) => userId !== senderId && !onlineUserIds.includes(userId),
     );
 
+    if (isSystemMessage) {
+      // Do not store join/leave system messages for offline users.
+      return;
+    }
+
     if (offlineUsers.length > 0) {
       // Save message with pending users
       await this.messageModel.create({
