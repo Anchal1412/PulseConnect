@@ -117,7 +117,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       client.emit('recent_messages', messagesToSend);
 
-      // Mark all messages as delivered for this user
       await this.offlineHandler.markAllMessagesAsDelivered(clientData.userId);
 
       if (DEBUG)
@@ -191,7 +190,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
 
-    // Save message for offline users
     await this.offlineHandler.handleMessageForOfflineUsers(
       clientData.userId,
       clientData.name,

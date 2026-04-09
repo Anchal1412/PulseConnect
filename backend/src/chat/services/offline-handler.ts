@@ -17,7 +17,6 @@ export class OfflineHandler {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
-  //   Get all users from database and save message for those not online//
   async handleMessageForOfflineUsers(
     senderId: string,
     senderName: string,
@@ -38,11 +37,9 @@ export class OfflineHandler {
     );
 
     if (isSystemMessage) {
-      // Do not store join/leave system messages for offline users.
       return;
     }
 
-    // Save message for all room users in DB, including pending offline users.
     await this.messageModel.create({
       senderId,
       senderName,
@@ -79,7 +76,6 @@ export class OfflineHandler {
     for (const msg of messages) {
       msg.pendingFor = msg.pendingFor.filter((id) => id !== userId);
 
-      // Delete if all users have received it
       if (msg.pendingFor.length === 0) {
         await this.messageModel.deleteOne({ _id: msg._id });
 

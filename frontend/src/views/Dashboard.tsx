@@ -39,7 +39,6 @@ const Dashboard: React.FC = () => {
   const [currentRoom, setCurrentRoom] = useState<string>("room1");
   const { token, payload } = useToken();
 
-
   useEffect(() => {
     const loadUsers = async () => {
       try {
@@ -139,11 +138,9 @@ const Dashboard: React.FC = () => {
   }, [payload?.roomId, token]);
 
   const handleLogout = async () => {
-    if(!token) return;
+    if (!token) return;
     try {
       socketRef.current?.emit("leave_room");
-      
-
 
       await logout(token);
       localStorage.removeItem("data");
