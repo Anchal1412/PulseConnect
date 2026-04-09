@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<string>("");
   const [currentRoom, setCurrentRoom] = useState<string>("room1");
-  const { token, payload } = useToken();
+  const { token } = useToken();
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -81,10 +81,8 @@ const Dashboard: React.FC = () => {
     if (storedData) {
       const parsed = JSON.parse(storedData);
       setCurrentUser(parsed.name);
+      setCurrentRoom(parsed.roomId || "room1");
     }
-
-    const roomId = payload?.roomId ?? "room1";
-    setCurrentRoom(roomId);
 
     socketRef.current = io("http://localhost:3001", {
       auth: {
@@ -135,7 +133,7 @@ const Dashboard: React.FC = () => {
     return () => {
       socketRef.current?.disconnect();
     };
-  }, [payload?.roomId, token]);
+  }, [token]);
 
   const handleLogout = async () => {
     if (!token) return;

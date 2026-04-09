@@ -31,15 +31,7 @@ export interface AuthResponse {
   name: string;
   email: string;
   token: string;
-}
-
-export interface TokenPayload {
-  sub: string;
-  email: string;
-  name: string;
-  roomId: Room;
-  iat?: number;
-  exp?: number;
+  roomId: string;
 }
 
 export interface SnackbarType {

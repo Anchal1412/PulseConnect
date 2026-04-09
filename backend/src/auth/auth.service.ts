@@ -37,6 +37,7 @@ export class AuthService {
       name: user.name,
       email: user.email,
       token: token,
+      roomId: user.roomId || 'room1',
     };
   }
 }

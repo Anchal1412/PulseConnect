@@ -21,7 +21,7 @@ interface JwtPayload {
   sub: string;
   email: string;
   name: string;
-  roomId: string;
+  roomId?: string;
 }
 
 const DEBUG = process.env.DEBUG === 'true';
