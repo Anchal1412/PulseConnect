@@ -17,7 +17,7 @@ export class ChatService {
   addUserToRoom(
     roomId: string,
     user: { socketId: string; userId: string; name: string },
-  ) {
+  ): void {
     if (!this.rooms.has(roomId)) {
       this.rooms.set(roomId, { users: new Map() });
     }
@@ -37,7 +37,7 @@ export class ChatService {
     }
   }
 
-  removeUserFromRoom(roomId: string, socketId: string) {
+  removeUserFromRoom(roomId: string, socketId: string): void {
     const room = this.rooms.get(roomId);
     if (!room) return;
 
@@ -54,7 +54,7 @@ export class ChatService {
     }
   }
 
-  removeUserFromAllRooms(socketId: string) {
+  removeUserFromAllRooms(socketId: string): void {
     this.rooms.forEach((room, roomId) => {
       room.users.forEach((user, userId) => {
         user.socketIds = user.socketIds.filter((id) => id !== socketId);
@@ -70,7 +70,7 @@ export class ChatService {
     });
   }
 
-  getRoomUsers(roomId: string) {
+  getRoomUsers(roomId: string): RoomUser[] {
     const room = this.rooms.get(roomId);
     if (!room) return [];
 

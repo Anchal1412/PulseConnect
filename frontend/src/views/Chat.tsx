@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, Button, Sheet, Typography, Chip, Textarea } from "@mui/joy";
 import { ChatProps } from "../models/User";
+import { SocketEvents } from "../constants/socket-events";
 import {
   chatWrapper,
   container,
@@ -25,35 +26,35 @@ const Chat: React.FC<ChatProps> = ({
 
   const [inputMessage, setInputMessage] = useState<string>("");
 
-  useEffect(() => {
+  useEffect((): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = () => {
+  const sendMessage = (): void => {
     if (!inputMessage.trim()) return;
 
-    socket?.emit("send_message", {
+    socket?.emit(SocketEvents.SendMessage, {
       message: inputMessage,
     });
 
     setInputMessage("");
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = (e: React.FormEvent): void => {
     e.preventDefault();
     sendMessage();
   };
 
   const handleTextareaKeyDown = (
     e: React.KeyboardEvent<HTMLTextAreaElement>,
-  ) => {
+  ): void => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   };
 
-  const formatTime = (timestamp: Date) => {
+  const formatTime = (timestamp: Date): string => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], {
       hour: "2-digit",

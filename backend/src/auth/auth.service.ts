@@ -10,7 +10,16 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(email: string, password: string) {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{
+    id: string;
+    name: string;
+    email: string;
+    token: string;
+    roomId: string;
+  }> {
     const user = await this.userService.findByEmail(email);
 
     if (!user) {
@@ -27,17 +36,17 @@ export class AuthService {
       sub: user._id,
       email: user.email,
       name: user.name,
-      roomId: user.roomId || 'room1',
+      roomId: user.roomId,
     };
 
     const token = this.jwtService.sign(payload);
 
     return {
-      id: user._id,
+      id: user._id.toString(),
       name: user.name,
       email: user.email,
       token: token,
-      roomId: user.roomId || 'room1',
+      roomId: user.roomId,
     };
   }
 }

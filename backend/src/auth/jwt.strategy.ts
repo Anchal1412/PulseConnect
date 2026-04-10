@@ -18,13 +18,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   validate(
     req: Request,
     payload: { sub: string; email: string; name: string; roomId: string },
-  ) {
+  ): { sub: string; email: string; name: string; roomId: string } {
     const authHeader = req.headers.authorization;
 
     if (typeof authHeader === 'string') {
       const token = authHeader.split(' ')[1];
 
-      //  BLOCKLIST CHECK
       if (token && blacklistedTokens.has(token)) {
         throw new UnauthorizedException('Token expired');
       }

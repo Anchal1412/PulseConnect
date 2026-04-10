@@ -9,14 +9,14 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Post('signup')
-  signup(@Body() body: CreateUserDto) {
+  async signup(@Body() body: CreateUserDto): Promise<any> {
     return this.userService.createUser(body);
   }
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
-  getUsers(@Req() req: Request) {
-    const user = req.user as { roomId?: string };
-    return this.userService.getUsersByRoom(user.roomId || 'room1');
+  async getUsers(@Req() req: Request): Promise<any[]> {
+    const user = req.user as { roomId: string };
+    return this.userService.getUsersByRoom(user.roomId);
   }
 }

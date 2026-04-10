@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { OfflineHandler } from './services/offline-handler';
+import { SocketEvents } from './socket-events.enum';
 
 interface SocketData {
   userId: string;
@@ -21,7 +22,7 @@ interface JwtPayload {
   sub: string;
   email: string;
   name: string;
-  roomId?: string;
+  roomId: string;
 }
 
 const DEBUG = process.env.DEBUG === 'true';
@@ -46,7 +47,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return client.data as SocketData;
   }
 
-  handleConnection(client: Socket) {
+  handleConnection(client: Socket): void {
     try {
       const token = client.handshake.auth.token as string;
 
@@ -62,9 +63,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       data.userId = payload.sub;
       data.email = payload.email;
       data.name = payload.name;
-      data.roomId = payload.roomId || 'room1';
+      data.roomId = payload.roomId;
       const users = this.chatService.getRoomUsers(data.roomId);
-      this.server.emit('online_users', users);
+      this.server.emit(SocketEvents.OnlineUsers, users);
 
       if (DEBUG) console.log(`User connected: ${payload.email}`);
     } catch (error) {
@@ -76,18 +77,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: Socket): void {
     const data = this.getClientData(client);
 
     if (DEBUG) console.log(`User disconnected: ${data?.email}`);
 
     this.chatService.removeUserFromAllRooms(client.id);
-    const users = this.chatService.getRoomUsers(data?.roomId || 'room1');
-    this.server.emit('online_users', users);
+    const users = this.chatService.getRoomUsers(data.roomId);
+    this.server.emit(SocketEvents.OnlineUsers, users);
   }
 
-  @SubscribeMessage('join_room')
-  async handleJoinRoom(client: Socket) {
+  @SubscribeMessage(SocketEvents.JoinRoom)
+  async handleJoinRoom(client: Socket): Promise<void> {
     const clientData = this.getClientData(client);
     const roomId = clientData.roomId;
 
@@ -115,7 +116,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         isSystemMessage: msg.isSystemMessage,
       }));
 
-      client.emit('recent_messages', messagesToSend);
+      client.emit(SocketEvents.RecentMessages, messagesToSend);
 
       await this.offlineHandler.markAllMessagesAsDelivered(clientData.userId);
 
@@ -125,7 +126,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         );
     }
 
-    this.server.to(roomId).emit('receive_message', {
+    this.server.to(roomId).emit(SocketEvents.ReceiveMessage, {
       message: `${clientData.name} joined the room`,
       sender: clientData.name,
       senderId: clientData.userId,
@@ -135,21 +136,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
-    this.server.to(roomId).emit('room_users', {
+    this.server.to(roomId).emit(SocketEvents.RoomUsers, {
       users: roomUsers,
       count: roomUsers.length,
     });
-    this.server.emit('online_users', roomUsers);
+    this.server.emit(SocketEvents.OnlineUsers, roomUsers);
 
     if (DEBUG) console.log(`User ${clientData.email} joined room ${roomId}`);
   }
 
-  @SubscribeMessage('leave_room')
-  async handleLeaveRoom(client: Socket) {
+  @SubscribeMessage(SocketEvents.LeaveRoom)
+  async handleLeaveRoom(client: Socket): Promise<void> {
     const clientData = this.getClientData(client);
     const roomId = clientData.roomId;
 
-    this.server.to(roomId).emit('receive_message', {
+    this.server.to(roomId).emit(SocketEvents.ReceiveMessage, {
       message: `${clientData.name} left the room`,
       sender: 'System',
       senderId: 'system',
@@ -163,7 +164,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
 
-    this.server.to(roomId).emit('room_users', {
+    this.server.to(roomId).emit(SocketEvents.RoomUsers, {
       users: roomUsers,
       count: roomUsers.length,
     });
@@ -171,8 +172,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (DEBUG) console.log(`User ${clientData.email} left room ${roomId}`);
   }
 
-  @SubscribeMessage('send_message')
-  async handleSendMessage(client: Socket, payload: { message: string }) {
+  @SubscribeMessage(SocketEvents.SendMessage)
+  async handleSendMessage(
+    client: Socket,
+    payload: { message: string },
+  ): Promise<void> {
     const clientData = this.getClientData(client);
     const roomId = clientData.roomId;
 
@@ -186,7 +190,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       isSystemMessage: false,
     };
 
-    this.server.to(roomId).emit('receive_message', messageData);
+    this.server.to(roomId).emit(SocketEvents.ReceiveMessage, messageData);
 
     const roomUsers = this.chatService.getRoomUsers(roomId);
 
@@ -200,13 +204,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
-  @SubscribeMessage('get_room_users')
-  handleGetRoomUsers(client: Socket, payload: { roomId: string }) {
+  @SubscribeMessage(SocketEvents.GetRoomUsers)
+  handleGetRoomUsers(client: Socket, payload: { roomId: string }): void {
     const { roomId } = payload;
 
     const users = this.chatService.getRoomUsers(roomId);
 
-    client.emit('room_users', {
+    client.emit(SocketEvents.RoomUsers, {
       users,
       count: users.length,
     });
