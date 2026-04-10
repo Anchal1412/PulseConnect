@@ -25,14 +25,16 @@ export class OfflineHandler {
     roomId: string,
     isSystemMessage: boolean = false,
   ): Promise<void> {
-    const allUsers = await this.userModel.find().lean().exec();
-    const allUserIds = allUsers.map((user) => user._id.toString());
+    // Get all users in the same room
+    const roomUsers = await this.userModel.find({ roomId }).lean().exec();
+    const roomUserIds = roomUsers.map((user) => user._id.toString());
 
     const onlineUserIds = onlineUsers
       .filter((user) => user.socketIds.length > 0)
       .map((user) => user.userId);
 
-    const offlineUsers = allUserIds.filter(
+    // Only get offline users from the same room
+    const offlineUsers = roomUserIds.filter(
       (userId) => userId !== senderId && !onlineUserIds.includes(userId),
     );
 
@@ -52,7 +54,7 @@ export class OfflineHandler {
 
     if (process.env.DEBUG === 'true') {
       console.log(
-        `Message saved for offline users: ${offlineUsers.join(', ')}`,
+        `Message saved for offline users in ${roomId}: ${offlineUsers.join(', ')}`,
       );
     }
   }
