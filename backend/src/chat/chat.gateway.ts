@@ -9,21 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { OfflineHandler } from './services/offline-handler';
-import { SocketEvents } from './models/socket-events';
-
-interface SocketData {
-  userId: string;
-  email: string;
-  name: string;
-  roomId: string;
-}
-
-interface JwtPayload {
-  sub: string;
-  email: string;
-  name: string;
-  roomId: string;
-}
+import { SocketData, SocketEvents, JwtPayload, RoomUser } from './models/chat';
 
 const DEBUG = process.env.DEBUG === 'true';
 
@@ -57,14 +43,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      const payload = this.jwtService.verify<JwtPayload>(token);
+      const payload: JwtPayload = this.jwtService.verify<JwtPayload>(token);
 
       const data = client.data as SocketData;
       data.userId = payload.sub;
       data.email = payload.email;
       data.name = payload.name;
       data.roomId = payload.roomId;
-      const users = this.chatService.getRoomUsers(data.roomId);
+      const users: RoomUser[] = this.chatService.getRoomUsers(data.roomId);
       this.server.emit(SocketEvents.OnlineUsers, users);
 
       if (DEBUG) console.log(`User connected: ${payload.email}`);
@@ -78,19 +64,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket): void {
-    const data = this.getClientData(client);
+    const data: SocketData = this.getClientData(client);
 
     if (DEBUG) console.log(`User disconnected: ${data?.email}`);
 
     this.chatService.removeUserFromAllRooms(client.id);
-    const users = this.chatService.getRoomUsers(data.roomId);
+    const users: RoomUser[] = this.chatService.getRoomUsers(data.roomId);
     this.server.emit(SocketEvents.OnlineUsers, users);
   }
 
   @SubscribeMessage(SocketEvents.JoinRoom)
   async handleJoinRoom(client: Socket): Promise<void> {
-    const clientData = this.getClientData(client);
-    const roomId = clientData.roomId;
+    const clientData: SocketData = this.getClientData(client);
+    const roomId: string = clientData.roomId;
 
     if (!roomId) return;
 

@@ -17,10 +17,8 @@ import {
 const Chat: React.FC<ChatProps> = ({
   socket,
   messages,
-  setMessages,
   roomUsers,
-  currentUser,
-  roomId,
+  currentUser
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

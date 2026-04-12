@@ -262,10 +262,8 @@ const Dashboard: React.FC = () => {
                 <Chat
                   socket={socketRef.current}
                   messages={messages}
-                  setMessages={setMessages}
                   roomUsers={roomUsers}
                   currentUser={currentUser}
-                  roomId={currentRoom}
                 />
               </Box>
             )}

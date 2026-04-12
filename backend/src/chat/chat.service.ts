@@ -1,14 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
-interface RoomUser {
-  userId: string;
-  name: string;
-  socketIds: string[];
-}
-
-interface ChatRoom {
-  users: Map<string, RoomUser>;
-}
+import { ChatRoom, RoomUser } from './models/chat';
 
 @Injectable()
 export class ChatService {

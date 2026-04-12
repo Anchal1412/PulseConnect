@@ -57,8 +57,6 @@ export interface RoomUser {
 export interface ChatProps {
   socket: Socket | null;
   messages: Message[];
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   roomUsers: RoomUser[];
   currentUser: string;
-  roomId: string;
 }
