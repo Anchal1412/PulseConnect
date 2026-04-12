@@ -9,7 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { OfflineHandler } from './services/offline-handler';
-import { SocketEvents } from './socket-events.enum';
+import { SocketEvents } from './models/socket-events';
 
 interface SocketData {
   userId: string;
@@ -49,7 +49,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket): void {
     try {
-      const token = client.handshake.auth.token as string;
+      const token: string = client.handshake.auth.token as string;
 
       if (!token) {
         if (DEBUG) console.log('No token provided');

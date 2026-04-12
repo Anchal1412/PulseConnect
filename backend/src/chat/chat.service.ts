@@ -22,9 +22,9 @@ export class ChatService {
       this.rooms.set(roomId, { users: new Map() });
     }
 
-    const room = this.rooms.get(roomId)!;
+    const room: ChatRoom = this.rooms.get(roomId)!;
 
-    const existingUser = room.users.get(user.userId);
+    const existingUser: RoomUser | undefined = room.users.get(user.userId);
 
     if (existingUser) {
       existingUser.socketIds.push(user.socketId);
@@ -38,7 +38,7 @@ export class ChatService {
   }
 
   removeUserFromRoom(roomId: string, socketId: string): void {
-    const room = this.rooms.get(roomId);
+    const room: ChatRoom | undefined = this.rooms.get(roomId);
     if (!room) return;
 
     room.users.forEach((user, userId) => {
