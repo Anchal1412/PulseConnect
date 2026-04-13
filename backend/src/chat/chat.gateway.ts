@@ -189,16 +189,4 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       false,
     );
   }
-
-  @SubscribeMessage(SocketEvents.GetRoomUsers)
-  handleGetRoomUsers(client: Socket, payload: { roomId: string }): void {
-    const { roomId } = payload;
-
-    const users = this.chatService.getRoomUsers(roomId);
-
-    client.emit(SocketEvents.RoomUsers, {
-      users,
-      count: users.length,
-    });
-  }
 }
