@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Room } from '../dto/create-user.dto';
 
 export type UserDocument = User & Document;
 
@@ -14,7 +15,10 @@ export class User {
   @Prop()
   password: string;
 
-  @Prop({ default: true })
+  @Prop()
+  roomId: Room;
+
+  @Prop()
   status: boolean;
 }
 

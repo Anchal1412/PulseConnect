@@ -1,14 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Box,
-  Button,
-  Sheet,
-  Typography,
-  Chip,
-  Snackbar,
-  Textarea,
-} from "@mui/joy";
-import { ChatProps, Message, SnackbarType } from "../models/User";
+import { Box, Button, Sheet, Typography, Chip, Textarea } from "@mui/joy";
+import { ChatProps } from "../models/User";
+import { SocketEvents } from "../constants/socket-events";
 import {
   chatWrapper,
   container,
@@ -24,76 +17,42 @@ import {
 const Chat: React.FC<ChatProps> = ({
   socket,
   messages,
-  setMessages,
   roomUsers,
-  currentUser,
+  currentUser
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [inputMessage, setInputMessage] = useState<string>("");
-  const [snackbar, setSnackbar] = useState<SnackbarType>({
-    open: false,
-    message: "",
-    color: "neutral",
-  });
 
-  
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on("receive_message", (data: Message) => {
-      setMessages((prev) => [...prev, data]);
-    });
-
-    socket.on("connect", () => {
-      setSnackbar({
-        open: true,
-        message: "Connected to chat server",
-        color: "success",
-      });
-    });
-
-    socket.on("disconnect", () => {
-      setSnackbar({
-        open: true,
-        message: "Disconnected from chat server",
-        color: "danger",
-      });
-    });
-
-    socket.on("error", (error: any) => {
-      setSnackbar({
-        open: true,
-        message: `Error: ${error}`,
-        color: "danger",
-      });
-    });
-
-    return () => {
-      socket.off("receive_message");
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("error");
-    };
-  }, [socket, setMessages]);
-
-  useEffect(() => {
+  useEffect((): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
+  const sendMessage = (): void => {
     if (!inputMessage.trim()) return;
 
-    socket?.emit("send_message", {
-      roomId: "room1",
+    socket?.emit(SocketEvents.SendMessage, {
       message: inputMessage,
     });
 
     setInputMessage("");
   };
 
-  const formatTime = (timestamp: Date) => {
+  const handleSendMessage = (e: React.FormEvent): void => {
+    e.preventDefault();
+    sendMessage();
+  };
+
+  const handleTextareaKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+  ): void => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const formatTime = (timestamp: Date): string => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], {
       hour: "2-digit",
@@ -115,7 +74,7 @@ const Chat: React.FC<ChatProps> = ({
               {user.name} {user.name === currentUser && "(You)"}
             </Chip>
           ))}
-        </Sheet>
+        </Sheet> 
 
         <Box sx={messagesContainer}>
           {messages.length === 0 ? (
@@ -129,11 +88,9 @@ const Chat: React.FC<ChatProps> = ({
                   {msg.isSystemMessage ? (
                     <Typography level="body-xs" sx={systemMessageStyle}>
                       {msg.sender === currentUser
-                        ? msg.action==="JOIN"
+                        ? msg.isJoin
                           ? "You joined"
-                          : msg.action==="LEAVE"
-                            ? "You left"
-                            : msg.message
+                          : "You left"
                         : msg.message.replace("the room", "")}
                     </Typography>
                   ) : (
@@ -173,6 +130,7 @@ const Chat: React.FC<ChatProps> = ({
               placeholder="Type a message..."
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={handleTextareaKeyDown}
               minRows={1}
               maxRows={3}
               sx={{ flex: 1 }}
@@ -184,13 +142,6 @@ const Chat: React.FC<ChatProps> = ({
         </Sheet>
       </Box>
 
-      <Snackbar
-        open={snackbar.open}
-        onClose={() => setSnackbar({ ...snackbar, message: '', open: false })}
-        color={snackbar.color}
-      >
-        {snackbar.message}
-      </Snackbar>
     </Box>
   );
 };

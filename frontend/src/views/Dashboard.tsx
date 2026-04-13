@@ -10,6 +10,7 @@ import { io, Socket } from "socket.io-client";
 import { Message, RoomUser } from "../models/User";
 import { Box, Typography, Button, Table, Sheet, Snackbar } from "@mui/joy";
 import useToken from "../Hooks/useToken";
+import { SocketEvents } from "../constants/socket-events";
 import {
   container,
   contentWrapper,
@@ -36,8 +37,8 @@ const Dashboard: React.FC = () => {
   const [roomUsers, setRoomUsers] = useState<RoomUser[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<string>("");
-  const {token} = useToken();
-
+  const [currentRoom, setCurrentRoom] = useState<string>("");
+  const { token } = useToken();
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -65,7 +66,6 @@ const Dashboard: React.FC = () => {
 
     loadUsers();
   }, [token, navigate]);
-  // SOCKET CONNECTION
   useEffect(() => {
     if (!token) {
       setSnackbar({
@@ -81,6 +81,7 @@ const Dashboard: React.FC = () => {
     if (storedData) {
       const parsed = JSON.parse(storedData);
       setCurrentUser(parsed.name);
+      setCurrentRoom(parsed.roomId);
     }
 
     socketRef.current = io("http://localhost:3001", {
@@ -91,7 +92,7 @@ const Dashboard: React.FC = () => {
     });
 
     socketRef.current.on("connect", () => {
-      socketRef.current?.emit("join_room", { roomId: "room1" });
+      socketRef.current?.emit(SocketEvents.JoinRoom);
     });
 
     socketRef.current.on("disconnect", () => {
@@ -102,13 +103,21 @@ const Dashboard: React.FC = () => {
       });
     });
 
+    socketRef.current.on(SocketEvents.ReceiveMessage, (data: Message) => {
+      setMessages((prev) => [...prev, data]);
+    });
+
+    socketRef.current.on(SocketEvents.RecentMessages, (messages: Message[]) => {
+      setMessages((prev) => [...prev, ...messages]);
+    });
+
     socketRef.current.on(
-      "room_users",
+      SocketEvents.RoomUsers,
       (data: { users: RoomUser[]; count: number }) => {
         setRoomUsers(data.users);
       },
     );
-    socketRef.current.on("online_users", (users: any[]) => {
+    socketRef.current.on(SocketEvents.OnlineUsers, (users: any[]) => {
       const ids = users.map((u) => u.userId);
       setOnlineUsers(ids);
     });
@@ -126,11 +135,10 @@ const Dashboard: React.FC = () => {
     };
   }, [token]);
 
-  const handleLogout = async () => {
-    if(!token) return;
+  const handleLogout = async (): Promise<void> => {
+    if (!token) return;
     try {
-      socketRef.current?.emit("leave_room", { roomId: "room1" });
-      
+      socketRef.current?.emit(SocketEvents.LeaveRoom);
 
       await logout(token);
       localStorage.removeItem("data");
@@ -144,7 +152,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (): Promise<void> => {
     if (token) {
       try {
         const data = await fetchUsers(token);
@@ -254,7 +262,6 @@ const Dashboard: React.FC = () => {
                 <Chat
                   socket={socketRef.current}
                   messages={messages}
-                  setMessages={setMessages}
                   roomUsers={roomUsers}
                   currentUser={currentUser}
                 />

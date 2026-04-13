@@ -8,10 +8,17 @@ export interface User {
   status: boolean;
 }
 
+export enum Room {
+  Room1 = 'room1',
+  Room2 = 'room2',
+  Room3 = 'room3',
+}
+
 export interface SignupPayload {
   name: string;
   email: string;
   password: string;
+  roomId: Room;
 }
 
 export interface LoginPayload {
@@ -20,10 +27,11 @@ export interface LoginPayload {
 }
 
 export interface AuthResponse {
- id: string;
+  id: string;
   name: string;
   email: string;
   token: string;
+  roomId: string;
 }
 
 export interface SnackbarType {
@@ -32,12 +40,12 @@ export interface SnackbarType {
   color: ColorPaletteProp;
 };
 export interface Message {
-  action: string;
   message: string;
   sender: string;
   senderId: string;
   timestamp: Date;
   isSystemMessage: boolean;
+  isJoin?: boolean;
 }
 
 export interface RoomUser {
@@ -47,9 +55,8 @@ export interface RoomUser {
 }
 
 export interface ChatProps {
-  socket:  Socket | null;
+  socket: Socket | null;
   messages: Message[];
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   roomUsers: RoomUser[];
   currentUser: string;
 }

@@ -3,21 +3,19 @@ import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, Room } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async createUser(data: CreateUserDto) {
-    // check if email already exists
+  async createUser(data: CreateUserDto): Promise<boolean> {
     const existingUser = await this.userModel.findOne({ email: data.email });
 
     if (existingUser) {
       throw new BadRequestException('Email already exists');
     }
 
-    // hash password
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const user = new this.userModel({
@@ -25,13 +23,16 @@ export class UserService {
       password: hashedPassword,
     });
 
-    return user.save();
+    await user.save();
+    return true;
   }
-  async findByEmail(email: string) {
+  async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email });
   }
 
-  async getAllUsers() {
-    return this.userModel.find().select('-password').exec();
+  async getUsersByRoom(
+    roomId: Room,
+  ): Promise<Omit<CreateUserDto, 'password'>[]> {
+    return this.userModel.find({ roomId }).select('-password').exec();
   }
 }

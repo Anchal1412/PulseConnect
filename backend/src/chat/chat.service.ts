@@ -1,14 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
-interface RoomUser {
-  userId: string;
-  name: string;
-  socketIds: string[];
-}
-
-interface ChatRoom {
-  users: Map<string, RoomUser>;
-}
+import { ChatRoom, RoomUser } from './models/chat';
 
 @Injectable()
 export class ChatService {
@@ -17,14 +8,14 @@ export class ChatService {
   addUserToRoom(
     roomId: string,
     user: { socketId: string; userId: string; name: string },
-  ) {
+  ): void {
     if (!this.rooms.has(roomId)) {
       this.rooms.set(roomId, { users: new Map() });
     }
 
-    const room = this.rooms.get(roomId)!;
+    const room: ChatRoom = this.rooms.get(roomId)!;
 
-    const existingUser = room.users.get(user.userId);
+    const existingUser: RoomUser | undefined = room.users.get(user.userId);
 
     if (existingUser) {
       existingUser.socketIds.push(user.socketId);
@@ -37,8 +28,8 @@ export class ChatService {
     }
   }
 
-  removeUserFromRoom(roomId: string, socketId: string) {
-    const room = this.rooms.get(roomId);
+  removeUserFromRoom(roomId: string, socketId: string): void {
+    const room: ChatRoom | undefined = this.rooms.get(roomId);
     if (!room) return;
 
     room.users.forEach((user, userId) => {
@@ -54,7 +45,7 @@ export class ChatService {
     }
   }
 
-  removeUserFromAllRooms(socketId: string) {
+  removeUserFromAllRooms(socketId: string): void {
     this.rooms.forEach((room, roomId) => {
       room.users.forEach((user, userId) => {
         user.socketIds = user.socketIds.filter((id) => id !== socketId);
@@ -70,7 +61,7 @@ export class ChatService {
     });
   }
 
-  getRoomUsers(roomId: string) {
+  getRoomUsers(roomId: string): RoomUser[] {
     const room = this.rooms.get(roomId);
     if (!room) return [];
 
